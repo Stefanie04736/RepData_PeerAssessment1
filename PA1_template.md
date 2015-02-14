@@ -57,10 +57,6 @@ library(dplyr)
 library(ggplot2)
 ```
 
-```
-## Warning: package 'ggplot2' was built under R version 3.1.2
-```
-
 As the column date is a factor variable, it is converted to a Date variable. Also the column interval indentifying the 5-minute interval in which the measurement was taken is an integer variable with for example 1655 meaning the time 4:55 pm. This is not suitable for further analysis and charts. Therefore another column is added showing the total minutes.
 
 
@@ -188,7 +184,8 @@ summary(steps_per_day$total_steps)
 
 
 ```r
-hist(steps_per_day$total_steps,xlab="Total number of steps per day", main="Total number of steps taken per day")
+hist(steps_per_day$total_steps,xlab="Total number of steps per day", 
+     main="Total number of steps taken per day")
 ```
 
 ![plot of chunk unnamed-chunk-6](figure/unnamed-chunk-6-1.png) 
@@ -210,7 +207,9 @@ The following time series plot shows the average number of steps taken per 5-min
 
 ```r
 steps_per_interval <- data %>% group_by(minutes) %>% summarize(avg_steps_interval=mean(steps,na.rm=TRUE))
-plot(steps_per_interval$minutes/60,steps_per_interval$avg_steps_interval,type='l',xlab='time in houres',ylab='number of steps',main='Average number of steps taken during one day')
+plot(steps_per_interval$minutes/60,steps_per_interval$avg_steps_interval,type='l',
+     xlab='time in houres',ylab='number of steps',
+     main='Average number of steps taken during one day')
 ```
 
 ![plot of chunk unnamed-chunk-7](figure/unnamed-chunk-7-1.png) 
@@ -243,7 +242,8 @@ data_new <- data2[,c("steps","date","interval","minutes")]
 
 ```r
 steps_per_day_new <- data_new %>% group_by(date) %>% summarize(total_steps=sum(steps))
-hist(steps_per_day_new$total_steps,xlab="Total number of steps per day", main="Total number of steps taken per day with missing values filled in")
+hist(steps_per_day_new$total_steps,xlab="Total number of steps per day", 
+     main="Total number of steps taken per day with missing values filled in")
 ```
 
 ![plot of chunk unnamed-chunk-11](figure/unnamed-chunk-11-1.png) 
@@ -274,8 +274,12 @@ head(data_new)
 ```
 
 ```r
-steps_per_interval_weekday <- data_new %>% group_by(minutes,ind_weekday) %>% summarize(avg_steps=mean(steps)) 
-g <- ggplot(steps_per_interval_weekday,aes(minutes/60,avg_steps)) + geom_line()+facet_wrap(~ind_weekday,nrow=2)+labs(title="Average number of steps taken during one day",x="time in houres",y="number of steps")
+steps_per_interval_weekday <- data_new %>% group_by(minutes,ind_weekday) %>% 
+                                summarize(avg_steps=mean(steps)) 
+g <- ggplot(steps_per_interval_weekday,aes(minutes/60,avg_steps)) + geom_line()+
+            facet_wrap(~ind_weekday,nrow=2)+
+            labs(title="Average number of steps taken during one day",
+                 x="time in houres",y="number of steps")
 print(g)
 ```
 

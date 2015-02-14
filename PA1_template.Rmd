@@ -43,7 +43,8 @@ summary(steps_per_day$total_steps)
 ### Histogram of the total number of steps taken each day
 
 ``` {r}
-hist(steps_per_day$total_steps,xlab="Total number of steps per day", main="Total number of steps taken per day")
+hist(steps_per_day$total_steps,xlab="Total number of steps per day", 
+     main="Total number of steps taken per day")
 ```
 
 ### The mean and median of the total number of steps taken per day
@@ -61,7 +62,9 @@ The following time series plot shows the average number of steps taken per 5-min
 
 ```{r}
 steps_per_interval <- data %>% group_by(minutes) %>% summarize(avg_steps_interval=mean(steps,na.rm=TRUE))
-plot(steps_per_interval$minutes/60,steps_per_interval$avg_steps_interval,type='l',xlab='time in houres',ylab='number of steps',main='Average number of steps taken during one day')
+plot(steps_per_interval$minutes/60,steps_per_interval$avg_steps_interval,type='l',
+     xlab='time in houres',ylab='number of steps',
+     main='Average number of steps taken during one day')
 ```
 
 ```{r}
@@ -88,7 +91,8 @@ data_new <- data2[,c("steps","date","interval","minutes")]
 ```
 ```{r}
 steps_per_day_new <- data_new %>% group_by(date) %>% summarize(total_steps=sum(steps))
-hist(steps_per_day_new$total_steps,xlab="Total number of steps per day", main="Total number of steps taken per day with missing values filled in")
+hist(steps_per_day_new$total_steps,xlab="Total number of steps per day", 
+     main="Total number of steps taken per day with missing values filled in")
 
 ```
 ```{r}
@@ -103,7 +107,11 @@ The new mean of the total steps taken per day with the missing values filled in 
 # note: Samstag is German for Saturday
 data_new <- mutate(data_new,ind_weekday=ifelse(weekdays(data_new$date)>="Samstag","weekend","weekday"))
 head(data_new)
-steps_per_interval_weekday <- data_new %>% group_by(minutes,ind_weekday) %>% summarize(avg_steps=mean(steps)) 
-g <- ggplot(steps_per_interval_weekday,aes(minutes/60,avg_steps)) + geom_line()+facet_wrap(~ind_weekday,nrow=2)+labs(title="Average number of steps taken during one day",x="time in houres",y="number of steps")
+steps_per_interval_weekday <- data_new %>% group_by(minutes,ind_weekday) %>% 
+                                summarize(avg_steps=mean(steps)) 
+g <- ggplot(steps_per_interval_weekday,aes(minutes/60,avg_steps)) + geom_line()+
+            facet_wrap(~ind_weekday,nrow=2)+
+            labs(title="Average number of steps taken during one day",
+                 x="time in houres",y="number of steps")
 print(g)
 ```
