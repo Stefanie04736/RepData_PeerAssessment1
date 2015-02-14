@@ -1,25 +1,109 @@
----
-title: "Reproducible Research: Peer Assessment 1"
-output: 
-  html_document:
-    keep_md: true
----
+# Reproducible Research: Assignment 1
+
+##Loading and preprocessing the data
+
+The data is read in. Here are the first ten rows of the data as well as the structure and a summary of the data:
+```{r}
+data<-read.csv("activity.csv")
+head(data,10)
+str(data)
+summary(data)
+```
+
+The packages dplyr and ggplot2 will be needed.
+
+```{r message=FALSE}
+library(dplyr)
+library(ggplot2)
+```
+
+As the column date is a factor variable, it is converted to a Date variable. Also the column interval indentifying the 5-minute interval in which the measurement was taken is an integer variable with for example 1655 meaning the time 4:55 pm. This is not suitable for further analysis and charts. Therefore another column is added showing the total minutes.
+
+```{r}
+data$date <- as.Date(data$date)
+data<-mutate(data, minutes=floor(data$interval/100)*60+data$interval%%100)
+```
+
+Here is the structure and summary of the data after transforming it as decribed:
+```{r}
+str(data)
+summary(data)
+```
 
 
-## Loading and preprocessing the data
+## What is the mean total number of steps taken per day?
 
+### Total number of steps taken per day
+```{r}
+steps_per_day <- data %>% group_by(date) %>% summarize(total_steps=sum(steps))
+steps_per_day
+summary(steps_per_day$total_steps)
+```
 
+### Histogram of the total number of steps taken each day
 
-## What is mean total number of steps taken per day?
+``` {r}
+hist(steps_per_day$total_steps,xlab="Total number of steps per day", main="Total number of steps taken per day")
+```
 
+### The mean and median of the total number of steps taken per day
 
+``` {r mean_median}
+total_steps_mean <- mean(steps_per_day$total_steps,na.rm=TRUE)
+total_steps_median <- median(steps_per_day$total_steps,na.rm=TRUE)
+```
+The mean of the total steps taken per day is `r total_steps_mean`, the median is 
+`r total_steps_median`.
 
 ## What is the average daily activity pattern?
 
+The following time series plot shows the average number of steps taken per 5-minute interval, averaged across all days.
 
+```{r}
+steps_per_interval <- data %>% group_by(minutes) %>% summarize(avg_steps_interval=mean(steps,na.rm=TRUE))
+plot(steps_per_interval$minutes/60,steps_per_interval$avg_steps_interval,type='l',xlab='time in houres',ylab='number of steps',main='Average number of steps taken during one day')
+```
+
+```{r}
+max_ind<-steps_per_interval$minutes[which.max(steps_per_interval$avg_steps_interval)]
+max_ind_time <- paste0(floor(max_ind/60),":",max_ind%%60)
+```
+The maximum number of steps averaged across all days are taken in the interval `r max_ind` (in minutes) corresponding to time `r max_ind_time `.
 
 ## Imputing missing values
 
+```{r}
+steps_missing <- sum(is.na(data$steps))
+```
 
+There are `r steps_missing` missing values. 
+
+These missing values are filled with the mean of the corresponding 5-minute interval. A new data set, data_new, is created with the missing data filled in.
+
+```{r}
+data2 <- merge(data,steps_per_interval,by.x="minutes",by.y="minutes")
+missing <- is.na(data2$steps)
+data2$steps[missing] <- data2$avg_steps_interval[missing]
+data_new <- data2[,c("steps","date","interval","minutes")]
+```
+```{r}
+steps_per_day_new <- data_new %>% group_by(date) %>% summarize(total_steps=sum(steps))
+hist(steps_per_day_new$total_steps,xlab="Total number of steps per day", main="Total number of steps taken per day with missing values filled in")
+
+```
+```{r}
+total_steps_mean_new <- mean(steps_per_day_new$total_steps,na.rm=TRUE)
+total_steps_median_new <- median(steps_per_day_new$total_steps,na.rm=TRUE)
+```
+The new mean of the total steps taken per day with the missing values filled in is `r total_steps_mean_new`, the median is `r total_steps_median_new`, which means that the mean and median are identical whereas they were slightly different when missing values were not filled in
 
 ## Are there differences in activity patterns between weekdays and weekends?
+
+```{r}
+# note: Samstag is German for Saturday
+data_new <- mutate(data_new,ind_weekday=ifelse(weekdays(data_new$date)>="Samstag","weekend","weekday"))
+head(data_new)
+steps_per_interval_weekday <- data_new %>% group_by(minutes,ind_weekday) %>% summarize(avg_steps=mean(steps)) 
+g <- ggplot(steps_per_interval_weekday,aes(minutes/60,avg_steps)) + geom_line()+facet_wrap(~ind_weekday,nrow=2)+labs(title="Average number of steps taken during one day",x="time in houres",y="number of steps")
+print(g)
+```
